@@ -1,0 +1,41 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>To-Do List</title>
+</head>
+<body>
+    <h1>To-Do List</h1>
+    <div id="login">
+        <h2>Login</h2>
+        <button onclick="window.location.href='/login'">Login with Keycloak</button>
+    </div>
+    <div id="todo">
+        <h2>Your To-Dos</h2>
+        <button onclick="fetchTodos()">Fetch Todos</button>
+        <div id="todos"></div>
+    </div>
+    <script>
+        function fetchTodos() {
+            fetch('/graphql', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
+                body: JSON.stringify({ query: '{ allTodos { edges { node { id title description time imageUrl } } } }' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const todos = data.data.allTodos.edges;
+                let todoList = '';
+                todos.forEach(todo => {
+                    todoList += `<p>${todo.node.title} - ${todo.node.description} - ${todo.node.time} - ${todo.node.imageUrl || ''}</p>`;
+                });
+                document.getElementById('todos').innerHTML = todoList;
+            });
+        }
+    </script>
+</body>
+</html>
